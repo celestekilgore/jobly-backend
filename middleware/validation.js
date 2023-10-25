@@ -13,23 +13,30 @@ const { BadRequestError } = require("../expressError");
  *
  * Throws BadRequestErrors for invalid filters.
  */
-function validateCompanyFilters(req,res,next) {
+//TODO: remove this, do in schema instead
+function validateCompanyFilters(req, res, next) {
 
-  const validKeys = ['nameLike','minEmployees','maxEmployees'];
+  const validKeys = ['nameLike', 'minEmployees', 'maxEmployees'];
 
   const keys = Object.keys(req.query);
 
   for (let key of keys) {
     if (!validKeys.includes(key)) {
-     throw new BadRequestError(`${key} not a valid search filter.`);
-  }}
+      throw new BadRequestError(`${key} not a valid search filter.`);
+    }
+  }
+  if (keys.includes("minEmployees") && isNaN(req.query.minEmployees) ||
+      keys.includes("maxEmployees") && isNaN(req.query.maxEmployees)) {
+
+    throw new BadRequestError(`minEmployees and maxEmployees must be numbers.`);
+  }
 
   if (keys.includes("minEmployees") &&
-  keys.includes("maxEmployees") &&
-  Number(req.query['minEmployees']) > Number(req.query['maxEmployees'])) {
-  throw new BadRequestError("Min employees must be less than max employees.");
-}
-    return next();
+      keys.includes("maxEmployees") &&
+    Number(req.query['minEmployees']) > Number(req.query['maxEmployees'])) {
+    throw new BadRequestError("Min employees must be less than max employees.");
+  }
+  return next();
 }
 
 

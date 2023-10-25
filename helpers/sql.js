@@ -39,7 +39,9 @@ function sqlForPartialUpdate(dataToUpdate, jsToSql) {
  * and values is an array whose values align with the parameterized values
  * of the where clause
  */
+//TODO: move to company model
 function sqlForCompanyFilter(dataToUpdate) {
+// TODO: maybe change to this: function sqlForCompanyFilter({minEmployees, maxEmployees, nameLike})  w/ 3 conditionals
 
   const keys = Object.keys(dataToUpdate);
 

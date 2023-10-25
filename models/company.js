@@ -75,6 +75,7 @@ class Company {
    * Queries DB & finds all companies matching the given clause and values.
    *
    * Returns [{ handle, name, description, numEmployees, logoUrl }, ...] */
+  //TODO: combine with findAll
   static async findFiltered(queryData) {
 
     const { whereClause, values } = queryData;
@@ -86,7 +87,7 @@ class Company {
     num_employees AS "numEmployees",
     logo_url      AS "logoUrl"
     FROM companies
-    ${whereClause}`,values);
+    ${whereClause}`,values); // if these are empty, would be just like findAll
 
     return companiesRes.rows;
   }
