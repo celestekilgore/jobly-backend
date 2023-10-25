@@ -14,6 +14,7 @@ const userUpdateSchema = require("../schemas/userUpdate.json");
 
 const router = express.Router();
 
+// router.use(ensureLoggedIn);
 
 /** POST / { user }  => { user, token }
  *
