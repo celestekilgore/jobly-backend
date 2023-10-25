@@ -67,7 +67,14 @@ class Company {
     return companiesRes.rows;
   }
 
-  /**  */
+  /**
+   * Takes in a SQL `whereClause` like: "WHERE name ILIKE $1"
+   *
+   * and `values` to insert into that where clause like: ["net"].
+   *
+   * Queries DB & finds all companies matching the given clause and values.
+   *
+   * Returns [{ handle, name, description, numEmployees, logoUrl }, ...] */
   static async findFiltered(whereClause, values) {
 
     const companiesRes = await db.query(`
