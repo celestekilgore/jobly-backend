@@ -38,13 +38,6 @@ function sqlForCompanyFilter(dataToUpdate) {
     dataToUpdate[minEmployees] > dataToUpdate[maxEmployees]) {
     throw new BadRequestError("Min employees must be less than max employees.");
   }
-  let whereClause = [];
-  if ("nameLike" in keys) {
-    whereClause.push(`name ILIKE $1`);
-  }
-  if (min) {
-  whereClause.push(`num_employees > 100`)
-  }
 
   const cols = keys.map((colName, idx) => {
     if (colName === 'nameLike')
