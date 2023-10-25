@@ -12,6 +12,7 @@ const Company = require("../models/company");
 const companyNewSchema = require("../schemas/companyNew.json");
 const companyUpdateSchema = require("../schemas/companyUpdate.json");
 const { sqlForCompanyFilter } = require("../helpers/sql");
+const { validateCompanyFilters } = require("../middleware/validation");
 
 const router = new express.Router();
 
@@ -51,16 +52,14 @@ router.post("/", ensureLoggedIn, async function (req, res, next) {
  * Authorization required: none
  */
 
-router.get("/", async function (req, res, next) {
+router.get("/", validateCompanyFilters, async function (req, res, next) {
 
     let companies;
 
-
     if (Object.keys(req.query).length > 0) {
-
-      const whereClause = sqlForCompanyFilter(req.query);
-      console.log("VALUES",Object.values(req.query));
-      companies = await Company.findFiltered(whereClause,Object.values(req.query));
+      const queryData = sqlForCompanyFilter(req.query);
+      console.log("queryData:",queryData);
+      companies = await Company.findFiltered(queryData);
 
     } else {
       companies = await Company.findAll();

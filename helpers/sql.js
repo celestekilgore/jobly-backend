@@ -30,32 +30,35 @@ function sqlForPartialUpdate(dataToUpdate, jsToSql) {
   };
 }
 
-
+/**
+ * Takes in an object dataToUpdate with k/v pairs of filters and data
+ * Valid search filters: nameLike, minEmployees, maxEmployees
+ *
+ * Returns an object { whereClause, values }
+ * where whereClause is a string like 'WHERE name ILIKE $1'
+ * and values is an array whose values align with the parameterized values
+ * of the where clause
+ */
 function sqlForCompanyFilter(dataToUpdate) {
-  const keys = Object.keys(dataToUpdate);
-  if ("minEmployees" in keys &&
-    "maxEmployees" in keys &&
-    dataToUpdate[minEmployees] > dataToUpdate[maxEmployees]) {
-    throw new BadRequestError("Min employees must be less than max employees.");
-  }
 
-  const sqlFilters = keys.map((colName, idx) => {
-    if (colName === 'nameLike') {
+  const keys = Object.keys(dataToUpdate);
+
+  const sqlFilters = keys.map((queryString, idx) => {
+    if (queryString === 'nameLike') {
+      dataToUpdate['nameLike'] = `%${dataToUpdate['nameLike']}%`;
       return `name ILIKE $${idx + 1}`;
-    } else if(colName === 'minEmployees') {
+    } else if(queryString === 'minEmployees') {
       return `num_employees >= $${idx + 1}`;
-    } else if(colName === 'maxEmployees') {
+    } else if(queryString === 'maxEmployees') {
       return `num_employees <= $${idx + 1}`;
-    } else {
-      return "";
     }
   });
 
-  const validFilters = sqlFilters
-  .filter(f => f !== "")
-  .join(" AND ");
+  // removing empty values and converting to WHERE clause syntax
+  const validFilters = sqlFilters.join(" AND ");
 
-  return "WHERE " + validFilters;
+  return {whereClause : "WHERE " + validFilters,
+          values : Object.values(dataToUpdate)};
 }
 
 module.exports = { sqlForPartialUpdate, sqlForCompanyFilter };

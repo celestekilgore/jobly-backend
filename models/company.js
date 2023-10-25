@@ -70,12 +70,14 @@ class Company {
   /**
    * Takes in a SQL `whereClause` like: "WHERE name ILIKE $1"
    *
-   * and `values` to insert into that where clause like: ["net"].
+   * and `values` to insert into the where clause like: ["net"].
    *
    * Queries DB & finds all companies matching the given clause and values.
    *
    * Returns [{ handle, name, description, numEmployees, logoUrl }, ...] */
-  static async findFiltered(whereClause, values) {
+  static async findFiltered(queryData) {
+
+    const { whereClause, values } = queryData;
 
     const companiesRes = await db.query(`
     SELECT handle,
@@ -85,14 +87,7 @@ class Company {
     logo_url      AS "logoUrl"
     FROM companies
     ${whereClause}`,values);
-    console.log("QUERY",`
-    SELECT handle,
-    name,
-    description,
-    num_employees AS "numEmployees",
-    logo_url      AS "logoUrl"
-    FROM companies
-    ${whereClause}`);
+
     return companiesRes.rows;
   }
 

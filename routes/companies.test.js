@@ -95,6 +95,12 @@ describe("GET /companies", function () {
           ],
     });
   });
+
+  test("Returns filtered results", async function() {
+    const resp = await request(app).get("/companies");
+  })
+
+
 });
 
 /************************************** GET /companies/:handle */
