@@ -39,15 +39,23 @@ function sqlForCompanyFilter(dataToUpdate) {
     throw new BadRequestError("Min employees must be less than max employees.");
   }
 
-  const cols = keys.map((colName, idx) => {
-    if (colName === 'nameLike')
-    return `"${jsToSql[colName] || colName}" ILIKE $${idx + 1}`;
-  } elif (colName === 'minEmployees') {
+  const sqlFilters = keys.map((colName, idx) => {
+    if (colName === 'nameLike') {
+      return `name ILIKE $${idx + 1}`;
+    } else if(colName === 'minEmployees') {
+      return `num_employees >= $${idx + 1}`;
+    } else if(colName === 'maxEmployees') {
+      return `num_employees <= $${idx + 1}`;
+    } else {
+      return "";
+    }
+  });
 
-  }
-);
+  const validFilters = sqlFilters
+  .filter(f => f !== "")
+  .join(" AND ");
 
-
+  return "WHERE " + validFilters;
 }
 
-module.exports = { sqlForPartialUpdate };
+module.exports = { sqlForPartialUpdate, sqlForCompanyFilter };
