@@ -15,6 +15,8 @@ beforeEach(commonBeforeEach);
 afterEach(commonAfterEach);
 afterAll(commonAfterAll);
 
+// TODO: add tests for new function, update findAll();
+
 /************************************** create */
 
 describe("create", function () {

@@ -97,7 +97,7 @@ describe("GET /companies", function () {
   });
 
   test("Returns filtered results", async function () {
-    const resp = await request(app).get("/companies?nameLike=c2");
+    const resp = await request(app).get("/companies?nameLike=2");
     expect(resp.body).toEqual({
       companies:
         [
@@ -116,14 +116,16 @@ describe("GET /companies", function () {
     const resp = await request(app).get("/companies?invalidName=name");
     expect(resp.body).toEqual({
       "error": {
-        "message": "invalidName not a valid search filter.",
+        "message": [
+          "instance is not allowed to have the additional property \"invalidName\""
+        ],
         "status": 400
       }
     });
   });
 
   test("Throws error if minEmployees > maxEmployees", async function () {
-    const resp = await request(app).get("/companies?minEmployees=800&maxEmployees=500");
+    const resp = await request(app).get("/companies?minEmployees=800&maxEmployees=500"); // TODO: use .query()
     expect(resp.body).toEqual({
       "error": {
         "message": "Min employees must be less than max employees.",
@@ -136,7 +138,9 @@ describe("GET /companies", function () {
     const resp = await request(app).get("/companies?minEmployees=two&maxEmployees=2");
     expect(resp.body).toEqual({
       "error": {
-        "message": "minEmployees and maxEmployees must be numbers.",
+        "message": [
+          "instance.minEmployees does not match pattern \"^[0-9]*$\""
+        ],
         "status": 400
       }
     });

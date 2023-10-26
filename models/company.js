@@ -50,12 +50,26 @@ class Company {
     return company;
   }
 
-  /** Find all companies.
+  /** Find all companies. TODO: update
    *
    * Returns [{ handle, name, description, numEmployees, logoUrl }, ...]
    * */
 
-  static async findAll() {
+  static async findAll({minEmployees, maxEmployees, nameLike}) {
+
+  //   let queryData = {};
+
+  // if (keys.length > 0) { TODO: handle this here
+  //   queryData = Company.sqlForFilter(req.query);
+  // }
+
+    if (minEmployees > maxEmployees) throw new BadRequestError(); //fill
+    // TODO: check if we need sqlForFilter?
+
+    const whereClause = queryData.whereClause || "";
+    const values = queryData.values || [];
+
+
     const companiesRes = await db.query(`
         SELECT handle,
                name,
@@ -63,34 +77,45 @@ class Company {
                num_employees AS "numEmployees",
                logo_url      AS "logoUrl"
         FROM companies
-        ORDER BY name`);
+        ${whereClause}
+        ORDER BY name`,values);
+
     return companiesRes.rows;
   }
+
 
   /**
-   * Takes in a SQL `whereClause` like: "WHERE name ILIKE $1"
-   *
-   * and `values` to insert into the where clause like: ["net"].
-   *
-   * Queries DB & finds all companies matching the given clause and values.
-   *
-   * Returns [{ handle, name, description, numEmployees, logoUrl }, ...] */
-  //TODO: combine with findAll
-  static async findFiltered(queryData) {
+ * Takes in an object dataToUpdate with k/v pairs of filters and data
+ * Valid search filters: nameLike, minEmployees, maxEmployees
+ *
+ * Returns an object { whereClause, values }
+ * where whereClause is a string like 'WHERE name ILIKE $1'
+ * and values is an array whose values align with the parameterized values
+ * of the where clause
+ */
+    static sqlForFilter(dataToUpdate) {
 
-    const { whereClause, values } = queryData;
+    let whereClause = [];
+    let values = [];
 
-    const companiesRes = await db.query(`
-    SELECT handle,
-    name,
-    description,
-    num_employees AS "numEmployees",
-    logo_url      AS "logoUrl"
-    FROM companies
-    ${whereClause}`,values); // if these are empty, would be just like findAll
+    if (dataToUpdate.nameLike) {
+        whereClause.push(`name ILIKE $${ values.length + 1 }`);
+        values.push(`%${dataToUpdate['nameLike']}%`);
+    }
+    if (dataToUpdate.minEmployees) {
+        whereClause.push(`num_employees >= $${values.length+ 1}`);
+        values.push(dataToUpdate['minEmployees']);
+    }
+    if (dataToUpdate.maxEmployees) {
+        whereClause.push(`num_employees <= $${values.length + 1}`);
+        values.push(dataToUpdate['maxEmployees']);
+    }
 
-    return companiesRes.rows;
+    whereClause = "WHERE " + whereClause.join(" AND ");
+
+    return { whereClause, values };
   }
+
 
 
   /** Given a company handle, return data about company.
@@ -173,6 +198,9 @@ class Company {
     if (!company) throw new NotFoundError(`No company: ${handle}`);
   }
 }
+
+
+
 
 
 module.exports = Company;
