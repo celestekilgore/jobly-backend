@@ -44,6 +44,28 @@ describe("POST /companies", function () {
     });
   });
 
+  test("unauth for non admin", async function () {
+    const resp = await request(app)
+      .post("/companies")
+      .send(newCompany)
+      .set("authorization", `Bearer ${u1Token}`);
+
+    expect(resp.body).toEqual({
+      "error": {
+        "message": "Must be an administrator to access this route.",
+        "status": 401}
+      }
+    );
+  });
+
+    test("unauth for anon", async function () {
+    const resp = await request(app)
+      .post(`/companies`)
+      .send(newCompany);
+    expect(resp.statusCode).toEqual(401);
+  });
+
+
   test("bad request with missing data", async function () {
     const resp = await request(app)
       .post("/companies")
@@ -65,22 +87,6 @@ describe("POST /companies", function () {
       .set("authorization", `Bearer ${adminToken}`);
     expect(resp.statusCode).toEqual(400);
   });
-
-   test("error for non admin", async function () {
-    const resp = await request(app)
-      .post("/companies")
-      .send(newCompany)
-      .set("authorization", `Bearer ${u1Token}`);
-
-    expect(resp.body).toEqual({
-      "error": {
-        "message": "Must be an administrator to access this route.",
-        "status": 401}
-      }
-    );
-
-  });
-
 
 });
 
@@ -274,6 +280,21 @@ describe("PATCH /companies/:handle", function () {
     expect(resp.statusCode).toEqual(401);
   });
 
+  test("unauth for non admin", async function () {
+    const resp = await request(app)
+      .patch("/companies/c1")
+      .send({
+        name: "C1-new",
+      })
+      .set("authorization", `Bearer ${u1Token}`);
+    expect(resp.body).toEqual({
+      "error": {
+        "message": "Must be an administrator to access this route.",
+        "status": 401}
+      }
+    );
+  });
+
   test("not found on no such company", async function () {
     const resp = await request(app)
       .patch(`/companies/nope`)
@@ -304,28 +325,12 @@ describe("PATCH /companies/:handle", function () {
     expect(resp.statusCode).toEqual(400);
   });
 
-   test("error for non admin", async function () {
-    const resp = await request(app)
-      .patch("/companies/c1")
-      .send({
-        name: "C1-new",
-      })
-      .set("authorization", `Bearer ${u1Token}`);
-    expect(resp.body).toEqual({
-      "error": {
-        "message": "Must be an administrator to access this route.",
-        "status": 401}
-      }
-    );
-  });
-
-
 });
 
 /************************************** DELETE /companies/:handle */
 
 describe("DELETE /companies/:handle", function () {
-  test("works for users", async function () {
+  test("works for admin", async function () {
     const resp = await request(app)
       .delete(`/companies/c1`)
       .set("authorization", `Bearer ${adminToken}`);
@@ -338,14 +343,7 @@ describe("DELETE /companies/:handle", function () {
     expect(resp.statusCode).toEqual(401);
   });
 
-  test("not found for no such company", async function () {
-    const resp = await request(app)
-      .delete(`/companies/nope`)
-      .set("authorization", `Bearer ${adminToken}`);
-    expect(resp.statusCode).toEqual(404);
-  });
-
-  test("error for non admin", async function () {
+  test("unauth for non admin", async function () {
     const resp = await request(app)
       .delete(`/companies/c1`)
       .set("authorization", `Bearer ${u1Token}`);
@@ -356,4 +354,12 @@ describe("DELETE /companies/:handle", function () {
       }
     );
   });
+
+  test("not found for no such company", async function () {
+    const resp = await request(app)
+      .delete(`/companies/nope`)
+      .set("authorization", `Bearer ${adminToken}`);
+    expect(resp.statusCode).toEqual(404);
+  });
+
 });

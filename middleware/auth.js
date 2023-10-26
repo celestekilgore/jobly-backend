@@ -46,7 +46,10 @@ function ensureLoggedIn(req, res, next) {
  * If user is not admin, raises Unauthorized.
  */
 function ensureAdmin(req, res, next) {
-  if (res.locals.user?.isAdmin) return next(); // check for username, strict equality
+  if (res.locals.user?.username &&
+    res.locals.user?.isAdmin === true) {
+    return next();
+  }
   throw new UnauthorizedError("Must be an administrator to access this route.");
 }
 
@@ -59,7 +62,7 @@ function ensureAdmin(req, res, next) {
 function ensureCorrectUserOrAdmin(req, res, next) {
   const username = req.params.username;
   if (res.locals.user?.username &&
-    (res.locals.user?.isAdmin || res.locals.user?.username === username)) { // strict equality admin and check username
+    (res.locals.user?.isAdmin === true || res.locals.user?.username === username)) { 
     return next();
   }
   throw new UnauthorizedError
