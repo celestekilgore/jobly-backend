@@ -38,12 +38,12 @@ class Company {
                     description,
                     num_employees AS "numEmployees",
                     logo_url AS "logoUrl"`, [
-          handle,
-          name,
-          description,
-          numEmployees,
-          logoUrl,
-        ],
+      handle,
+      name,
+      description,
+      numEmployees,
+      logoUrl,
+    ],
     );
     const company = result.rows[0];
 
@@ -55,20 +55,18 @@ class Company {
    * Returns [{ handle, name, description, numEmployees, logoUrl }, ...]
    * */
 
-  static async findAll({minEmployees, maxEmployees, nameLike}) {
+  static async findAll({ minEmployees, maxEmployees, nameLike }) {
 
-  //   let queryData = {};
+    if (minEmployees > maxEmployees) throw new BadRequestError(
+      "Min employees must be less than max employees");
 
-  // if (keys.length > 0) { TODO: handle this here
-  //   queryData = Company.sqlForFilter(req.query);
-  // }
+    let whereClause, values;
 
-    if (minEmployees > maxEmployees) throw new BadRequestError(); //fill
-    // TODO: check if we need sqlForFilter?
-
-    const whereClause = queryData.whereClause || "";
-    const values = queryData.values || [];
-
+    if (minEmployees || maxEmployees || nameLike) {
+      let filterData = Company._sqlForFilter({minEmployees, maxEmployees, nameLike});
+      whereClause = filterData.whereClause;
+      values = filterData.values;
+    }
 
     const companiesRes = await db.query(`
         SELECT handle,
@@ -78,7 +76,7 @@ class Company {
                logo_url      AS "logoUrl"
         FROM companies
         ${whereClause}
-        ORDER BY name`,values);
+        ORDER BY name`, values);
 
     return companiesRes.rows;
   }
@@ -93,22 +91,22 @@ class Company {
  * and values is an array whose values align with the parameterized values
  * of the where clause
  */
-    static sqlForFilter(dataToUpdate) {
+  static _sqlForFilter({minEmployees, maxEmployees, nameLike}) {
 
     let whereClause = [];
     let values = [];
 
-    if (dataToUpdate.nameLike) {
-        whereClause.push(`name ILIKE $${ values.length + 1 }`);
-        values.push(`%${dataToUpdate['nameLike']}%`);
+    if (nameLike) {
+      values.push(`%${nameLike}%`);
+      whereClause.push(`name ILIKE $${values.length}`);
     }
-    if (dataToUpdate.minEmployees) {
-        whereClause.push(`num_employees >= $${values.length+ 1}`);
-        values.push(dataToUpdate['minEmployees']);
+    if (minEmployees) {
+      values.push(minEmployees);
+      whereClause.push(`num_employees >= $${values.length}`);
     }
-    if (dataToUpdate.maxEmployees) {
-        whereClause.push(`num_employees <= $${values.length + 1}`);
-        values.push(dataToUpdate['maxEmployees']);
+    if (maxEmployees) {
+      values.push(maxEmployees);
+      whereClause.push(`num_employees <= $${values.length}`);
     }
 
     whereClause = "WHERE " + whereClause.join(" AND ");
@@ -157,11 +155,11 @@ class Company {
 
   static async update(handle, data) {
     const { setCols, values } = sqlForPartialUpdate(
-        data,
-        {
-          numEmployees: "num_employees",
-          logoUrl: "logo_url",
-        });
+      data,
+      {
+        numEmployees: "num_employees",
+        logoUrl: "logo_url",
+      });
     const handleVarIdx = "$" + (values.length + 1);
 
     const querySql = `

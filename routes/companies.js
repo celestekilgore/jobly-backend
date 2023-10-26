@@ -67,16 +67,7 @@ router.get("/", async function (req, res, next) {
     throw new BadRequestError(errs);
   }
 
-  const keys = Object.keys(req.query);
-
-  // // move to method
-  // if (keys.includes("minEmployees") &&
-  //   keys.includes("maxEmployees") &&
-  //   Number(req.query['minEmployees']) > Number(req.query['maxEmployees'])) {
-  //   throw new BadRequestError("Min employees must be less than max employees.");
-  // }
-
-  const companies = await Company.findAll(req.query);
+  const companies = await Company.findAll(inputs);
 
   return res.json({ companies });
 
