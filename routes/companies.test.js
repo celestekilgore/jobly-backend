@@ -97,7 +97,8 @@ describe("GET /companies", function () {
   });
 
   test("Returns filtered results", async function () {
-    const resp = await request(app).get("/companies?nameLike=2");
+    const resp = await request(app).get("/companies")
+    .query({nameLike : "2"});;
     expect(resp.body).toEqual({
       companies:
         [
@@ -113,7 +114,8 @@ describe("GET /companies", function () {
   });
 
   test("Throws error for invalid filter", async function () {
-    const resp = await request(app).get("/companies?invalidName=name");
+    const resp = await request(app).get("/companies")
+    .query({invalidName: "Steve"});;
     expect(resp.body).toEqual({
       "error": {
         "message": [
@@ -125,21 +127,60 @@ describe("GET /companies", function () {
   });
 
   test("Throws error if minEmployees > maxEmployees", async function () {
-    const resp = await request(app).get("/companies?minEmployees=800&maxEmployees=500"); // TODO: use .query()
+    const resp = await request(app)
+    .get("/companies")
+    .query({minEmployees : 800, maxEmployees : 500});
+
     expect(resp.body).toEqual({
       "error": {
-        "message": "Min employees must be less than max employees.",
+        "message": "Min employees must be less than max employees",
         "status": 400
       }
     });
   });
 
-  test("Returns numEmployees as numbers", async function () {
-    const resp = await request(app).get("/companies?minEmployees=two&maxEmployees=2");
+  test("Errors when min/maxEmployees not number", async function () {
+    const resp = await request(app).get("/companies")
+    .query({minEmployees : "two"});;
     expect(resp.body).toEqual({
       "error": {
         "message": [
-          "instance.minEmployees does not match pattern \"^[0-9]*$\""
+          "instance.minEmployees is not of a type(s) integer"
+        ],
+        "status": 400
+      }
+    });
+
+    const resp2 = await request(app).get("/companies")
+    .query({maxEmployees : "two"});;
+    expect(resp2.body).toEqual({
+      "error": {
+        "message": [
+          "instance.maxEmployees is not of a type(s) integer"
+        ],
+        "status": 400
+      }
+    });
+  });
+
+  test("Errors when min/maxEmployees less than 1", async function () {
+    const resp = await request(app).get("/companies")
+    .query({minEmployees : 0});;
+    expect(resp.body).toEqual({
+      "error": {
+        "message": [
+          "instance.minEmployees must be greater than or equal to 1"
+        ],
+        "status": 400
+      }
+    });
+
+    const resp2 = await request(app).get("/companies")
+    .query({maxEmployees : 0});;
+    expect(resp2.body).toEqual({
+      "error": {
+        "message": [
+          "instance.maxEmployees must be greater than or equal to 1"
         ],
         "status": 400
       }

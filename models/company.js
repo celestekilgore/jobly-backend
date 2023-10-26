@@ -50,7 +50,15 @@ class Company {
     return company;
   }
 
-  /** Find all companies. TODO: update
+  /** Find all companies.
+   *  Optionally, filter data based on parameters, passed in as an object
+   *
+   *  Valid filters:
+   *  nameLike : filters based on case-insensitive name match
+   *  minEmployees : minimum number of employees
+   *  maxEmployees : maximum number of employees
+   *
+   *  Example input: {nameLike : "green", minEmployees : 5}
    *
    * Returns [{ handle, name, description, numEmployees, logoUrl }, ...]
    * */
@@ -60,13 +68,8 @@ class Company {
     if (minEmployees > maxEmployees) throw new BadRequestError(
       "Min employees must be less than max employees");
 
-    let whereClause, values;
-
-    if (minEmployees || maxEmployees || nameLike) {
-      let filterData = Company._sqlForFilter({minEmployees, maxEmployees, nameLike});
-      whereClause = filterData.whereClause;
-      values = filterData.values;
-    }
+    const { whereClause, values } = Company._sqlForFilter(
+      { minEmployees, maxEmployees, nameLike });
 
     const companiesRes = await db.query(`
         SELECT handle,
@@ -83,15 +86,17 @@ class Company {
 
 
   /**
- * Takes in an object dataToUpdate with k/v pairs of filters and data
+ * Takes in an object with k/v pairs of filters and data
  * Valid search filters: nameLike, minEmployees, maxEmployees
+ *
+ * Example input: {nameLike : "green", minEmployees : 5}
  *
  * Returns an object { whereClause, values }
  * where whereClause is a string like 'WHERE name ILIKE $1'
  * and values is an array whose values align with the parameterized values
  * of the where clause
  */
-  static _sqlForFilter({minEmployees, maxEmployees, nameLike}) {
+  static _sqlForFilter({ minEmployees, maxEmployees, nameLike }) {
 
     let whereClause = [];
     let values = [];
@@ -109,7 +114,11 @@ class Company {
       whereClause.push(`num_employees <= $${values.length}`);
     }
 
-    whereClause = "WHERE " + whereClause.join(" AND ");
+    if (whereClause.length > 0) {
+      whereClause = "WHERE " + whereClause.join(" AND ");
+    } else {
+      whereClause = "";
+    }
 
     return { whereClause, values };
   }
