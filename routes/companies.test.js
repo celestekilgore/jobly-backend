@@ -21,6 +21,9 @@ afterAll(commonAfterAll);
 
 /************************************** POST /companies */
 
+// update names
+// test for anon
+
 describe("POST /companies", function () {
   const newCompany = {
     handle: "new",
@@ -30,7 +33,7 @@ describe("POST /companies", function () {
     numEmployees: 10,
   };
 
-  test("ok for users", async function () {
+  test("ok for admin", async function () {
     const resp = await request(app)
       .post("/companies")
       .send(newCompany)
@@ -244,7 +247,7 @@ describe("GET /companies/:handle", function () {
 /************************************** PATCH /companies/:handle */
 
 describe("PATCH /companies/:handle", function () {
-  test("works for users", async function () {
+  test("works for admin", async function () {
     const resp = await request(app)
       .patch(`/companies/c1`)
       .send({
@@ -308,7 +311,6 @@ describe("PATCH /companies/:handle", function () {
         name: "C1-new",
       })
       .set("authorization", `Bearer ${u1Token}`);
-
     expect(resp.body).toEqual({
       "error": {
         "message": "Must be an administrator to access this route.",
@@ -347,7 +349,6 @@ describe("DELETE /companies/:handle", function () {
     const resp = await request(app)
       .delete(`/companies/c1`)
       .set("authorization", `Bearer ${u1Token}`);
-
     expect(resp.body).toEqual({
       "error": {
         "message": "Must be an administrator to access this route.",
@@ -355,5 +356,4 @@ describe("DELETE /companies/:handle", function () {
       }
     );
   });
-  
 });

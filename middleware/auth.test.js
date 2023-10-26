@@ -5,7 +5,8 @@ const { UnauthorizedError } = require("../expressError");
 const {
   authenticateJWT,
   ensureLoggedIn,
-  ensureAdmin
+  ensureAdmin,
+  ensureCorrectUserOrAdmin
 } = require("./auth");
 
 
@@ -72,6 +73,7 @@ describe("ensureLoggedIn", function () {
 
 
 describe("ensureAdmin", function () {
+
   test("works", function () {
     const req = {};
     const res = { locals: { user: { username: "test", isAdmin: true } } };
@@ -85,5 +87,31 @@ describe("ensureAdmin", function () {
     expect(() => ensureAdmin(req, res, next))
       .toThrow(UnauthorizedError);
   });
+
+});
+
+describe("ensureCorrectUserOrAdmin", function () {
+  test("works for admin", function () {
+    const req = {};
+    const res = { locals: { user: { username: "test", isAdmin: true } } };
+    expect(() => ensureCorrectUserOrAdmin(req, res, next))
+      .not.toThrow(UnauthorizedError);
+  });
+
+  test("works for correct user", function () {
+    const req = { params: { username: "test" }};
+    const res = { locals: { user: { username: "test", isAdmin: false } } };
+    expect(() => ensureCorrectUserOrAdmin(req, res, next))
+      .not.toThrow(UnauthorizedError);
+  });
+
+  test("unauth if not admin or correct user", function () {
+    const req = { params : { username: "not_test" }};
+    const res = { locals: { user: { username: "test", isAdmin: false } } };
+    expect(() => ensureCorrectUserOrAdmin(req, res, next))
+      .toThrow(UnauthorizedError);
+  });
+
+  // test for anon user?
 
 });
