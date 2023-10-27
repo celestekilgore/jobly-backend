@@ -139,15 +139,35 @@ class Company {
                name,
                description,
                num_employees AS "numEmployees",
-               logo_url      AS "logoUrl"
+               logo_url AS "logoUrl",
+               j.id,
+               j.title AS "title",
+               j.salary AS "salary",
+               j.equity AS "equity",
+               j.company_handle AS "companyHandle"
         FROM companies
+        JOIN jobs AS j
+        ON jobs.company_handle = companies.handle
         WHERE handle = $1`, [handle]);
 
     const company = companyRes.rows[0];
 
     if (!company) throw new NotFoundError(`No company: ${handle}`);
 
-    return company;
+    return {
+      handle: company.handle,
+      name: company.name,
+      description: company.description,
+      numEmployees: company.numEmployees,
+      logoUrl: company.logoUrl,
+      jobs: {
+        id: company.id,
+        title: company.title,
+        salary: company.salary,
+        equity: company.equity,
+        companyHandle: company.companyHandle
+      }
+    };
   }
 
   /** Update company data with `data`.
