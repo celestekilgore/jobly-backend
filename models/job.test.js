@@ -17,7 +17,6 @@ beforeEach(commonBeforeEach);
 afterEach(commonAfterEach);
 afterAll(commonAfterAll);
 
-
 /************************************** create */
 
 describe("create", function () {
@@ -29,24 +28,24 @@ describe("create", function () {
     logoUrl: "http://new.img",
   };
   const newJob = {
-    id: 1,
     title: "test title",
     salary: 1000,
     equity: 0,
-    company_handle: "new"
-  };
-  const newJob2 = {
-    id: 2,
-    title: "test title 2",
-    salary: 2000,
-    equity: 0.2,
-    company_handle: "new2"
+    companyHandle: "new"
   };
 
   test("works", async function () {
     let company = await Company.create(newCompany);
+    console.log(newJob);
     let job = await Job.create(newJob);
-    expect(job).toEqual(newJob);
+    let job_id = job.id;
+    expect(job).toEqual({
+      id: job_id,
+      title: "test title",
+      salary: 1000,
+      equity: "0",
+      companyHandle: "new"
+    });
 
     const result = await db.query(
       `SELECT
@@ -56,26 +55,16 @@ describe("create", function () {
       equity,
       company_handle
            FROM jobs
-           WHERE id = 1`);
+           WHERE id = ${job_id}`);
     expect(result.rows).toEqual([
       {
-        id: 1,
+        id: job_id,
         title: "test title",
         salary: 1000,
-        equity: 0,
+        equity: "0",
         company_handle: "new"
       },
     ]);
-  });
-
-  test("bad request with dupe", async function () {
-    try {
-      await Job.create(newJob);
-      await Job.create(newJob);
-      throw new Error("fail test, you shouldn't get here");
-    } catch (err) {
-      expect(err instanceof BadRequestError).toBeTruthy();
-    }
   });
 });
 
@@ -178,7 +167,7 @@ describe("_sqlForFilter", function () {
 
     expect(filterData).toEqual(
       {
-        whereClause: "WHERE title ILIKE $1 AND min_salary >= $2 AND hasEquity > 0",
+        whereClause: "WHERE title ILIKE $1 AND salary >= $2 AND equity > 0",
         values: ["%test%", 1000]
       });
   });

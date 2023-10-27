@@ -62,7 +62,7 @@ class Job {
         company_handle AS "companyHandle"
         FROM jobs
         ${whereClause}
-        ORDER BY id`,[values]);
+        ORDER BY id`,values);
 
     return jobsRes.rows;
   }
