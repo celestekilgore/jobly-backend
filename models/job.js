@@ -48,7 +48,10 @@ class Job {
    * Returns [{ id, title, salary, equity, companyHandle }, ...]
    * */
 
-  static async findAll() {
+  static async findAll({ title, minSalary, hasEquity }) {
+
+    const {whereClause, values} = Job._sqlForFilter(
+      { title, minSalary, hasEquity });
 
     const jobsRes = await db.query(`
         SELECT
@@ -58,10 +61,49 @@ class Job {
         equity,
         company_handle AS "companyHandle"
         FROM jobs
-        ORDER BY id`);
+        ${whereClause}
+        ORDER BY id`,[values]);
 
     return jobsRes.rows;
   }
+
+    /**
+ * Takes in an object with k/v pairs of filters and data
+ * Valid search filters: nameLike, minEmployees, maxEmployees
+ *
+ * Example input: {nameLike : "green", minEmployees : 5}
+ *
+ * Returns an object { whereClause, values }
+ * where whereClause is a string like 'WHERE name ILIKE $1'
+ * and values is an array whose values align with the parameterized values
+ * of the where clause
+ */
+    static _sqlForFilter({ title, minSalary, hasEquity }) {
+
+      let whereClause = [];
+      let values = [];
+
+      if (title) {
+        values.push(`%${title}%`);
+        whereClause.push(`title ILIKE $${values.length}`);
+      }
+      if (minSalary) {
+        values.push(minSalary);
+        whereClause.push(`salary >= $${values.length}`);
+      }
+      if (hasEquity === true) {
+        whereClause.push(`equity > 0`);
+      }
+
+
+      if (whereClause.length > 0) {
+        whereClause = "WHERE " + whereClause.join(" AND ");
+      } else {
+        whereClause = "";
+      }
+
+      return { whereClause, values };
+    }
 
 
 
@@ -75,18 +117,8 @@ class Job {
 
   static async get(id) {
     const jobRes = await db.query(`
-        SELECT
-        id,
-        title,
-        salary,
-        equity,
-        companies.handle AS "handle",
-        companies.name AS "name",
-        companies.description AS "description",
-        companies.num_employees AS "numEmployees",
-        companies.logo_url AS "logoUrl",
-        FROM jobs
-        JOIN companies ON companies.handle = jobs.company_handle
+        SELECT * FROM jobs
+        JOIN companies ON company_handle = companies.handle
         WHERE id = $1`, [id]);
 
     const job = jobRes.rows[0];
@@ -102,8 +134,8 @@ class Job {
         handle: job.handle,
         name: job.name,
         description: job.description,
-        numEmployees: job.numEmployees,
-        logoUrl: job.logoUrl
+        numEmployees: job.num_employees,
+        logoUrl: job.logo_url
       }
     };
   }
@@ -163,4 +195,4 @@ class Job {
 }
 
 
-module.exports = job;
+module.exports = Job;
