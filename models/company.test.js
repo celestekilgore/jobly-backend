@@ -15,8 +15,6 @@ beforeEach(commonBeforeEach);
 afterEach(commonAfterEach);
 afterAll(commonAfterAll);
 
-// TODO: add tests for new function, update findAll();
-
 /************************************** create */
 
 describe("create", function () {
@@ -60,7 +58,6 @@ describe("create", function () {
 
 /************************************** findAll */
 
-// _sql : can test WHERE builder
 
 describe("findAll", function () {
   test("works: no filter", async function () {
@@ -154,9 +151,9 @@ describe("findAll", function () {
 
 });
 
-describe("_sqlForFilter", function () {
+describe("_filterWhereBuilder", function () {
   test("works with valid inputs", function () {
-    const filterData = Company._sqlForFilter(
+    const filterData = Company._filterWhereBuilder(
       {
         nameLike: "testName",
         minEmployees: 5,
@@ -170,10 +167,8 @@ describe("_sqlForFilter", function () {
       });
   });
 
-
-
   test("works with one input", function () {
-    const filterData = Company._sqlForFilter(
+    const filterData = Company._filterWhereBuilder(
       { nameLike: "testName" });
 
     expect(filterData).toEqual(
@@ -183,10 +178,8 @@ describe("_sqlForFilter", function () {
       });
   });
 
-
-
   test("works with invalid field", function () {
-    const filterData = Company._sqlForFilter(
+    const filterData = Company._filterWhereBuilder(
       { spork: "testName" });
 
     expect(filterData).toEqual(
@@ -196,10 +189,8 @@ describe("_sqlForFilter", function () {
       });
   });
 
-
-
   test("works with empty input", function () {
-    const filterData = Company._sqlForFilter({});
+    const filterData = Company._filterWhereBuilder({});
 
     expect(filterData).toEqual(
       {

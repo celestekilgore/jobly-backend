@@ -112,6 +112,10 @@ describe("ensureCorrectUserOrAdmin", function () {
       .toThrow(UnauthorizedError);
   });
 
-  // test for anon user?
-
+  test("unauth: if anon", function () {
+    const req = { params: { username: "test" } };
+    const res = { locals: {} };
+    expect(() => ensureCorrectUserOrAdmin(req, res, next))
+        .toThrow(UnauthorizedError);
+  });
 });

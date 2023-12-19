@@ -68,7 +68,7 @@ class Company {
     if (minEmployees > maxEmployees) throw new BadRequestError(
       "Min employees must be less than max employees");
 
-    const { whereClause, values } = Company._sqlForFilter(
+    const { whereClause, values } = Company._filterWhereBuilder(
       { minEmployees, maxEmployees, nameLike });
 
     const companiesRes = await db.query(`
@@ -96,7 +96,7 @@ class Company {
  * and values is an array whose values align with the parameterized values
  * of the where clause
  */
-  static _sqlForFilter({ minEmployees, maxEmployees, nameLike }) {
+  static _filterWhereBuilder({ minEmployees, maxEmployees, nameLike }) {
 
     let whereClause = [];
     let values = [];
@@ -113,7 +113,6 @@ class Company {
       values.push(maxEmployees);
       whereClause.push(`num_employees <= $${values.length}`);
     }
-
     if (whereClause.length > 0) {
       whereClause = "WHERE " + whereClause.join(" AND ");
     } else {
@@ -122,7 +121,6 @@ class Company {
 
     return { whereClause, values };
   }
-
 
 
   /** Given a company handle, return data about company.
@@ -135,39 +133,28 @@ class Company {
 
   static async get(handle) {
     const companyRes = await db.query(`
-        SELECT handle,
-               name,
-               description,
-               num_employees AS "numEmployees",
-               logo_url AS "logoUrl",
-               j.id,
-               j.title AS "title",
-               j.salary AS "salary",
-               j.equity AS "equity",
-               j.company_handle AS "companyHandle"
-        FROM companies
-        JOIN jobs AS j
-        ON jobs.company_handle = companies.handle
-        WHERE handle = $1`, [handle]);
+    SELECT handle,
+           name,
+           description,
+           num_employees AS "numEmployees",
+           logo_url      AS "logoUrl"
+    FROM companies
+    WHERE handle = $1`, [handle]);
 
     const company = companyRes.rows[0];
 
     if (!company) throw new NotFoundError(`No company: ${handle}`);
 
-    return {
-      handle: company.handle,
-      name: company.name,
-      description: company.description,
-      numEmployees: company.numEmployees,
-      logoUrl: company.logoUrl,
-      jobs: {
-        id: company.id,
-        title: company.title,
-        salary: company.salary,
-        equity: company.equity,
-        companyHandle: company.companyHandle
-      }
-    };
+    const jobsRes = await db.query(`
+    SELECT id, title, salary, equity
+    FROM jobs
+    WHERE company_handle = $1
+    ORDER BY id`, [handle],
+    );
+
+    company.jobs = jobsRes.rows;
+
+    return company;
   }
 
   /** Update company data with `data`.
@@ -225,9 +212,6 @@ class Company {
     if (!company) throw new NotFoundError(`No company: ${handle}`);
   }
 }
-
-
-
 
 
 module.exports = Company;

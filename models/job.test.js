@@ -70,8 +70,6 @@ describe("create", function () {
 
 /************************************** findAll */
 
-// _sql : can test WHERE builder
-
 describe("findAll", function () {
   test("works: no filter", async function () {
     let jobs = await Job.findAll({});
@@ -153,12 +151,12 @@ describe("findAll", function () {
   });
 });
 
-/************************************** _sqlForFilter */
+/************************************** _filterWhereBuilder */
 
 
-describe("_sqlForFilter", function () {
+describe("_filterWhereBuilder", function () {
   test("works with valid inputs", function () {
-    const filterData = Job._sqlForFilter(
+    const filterData = Job._filterWhereBuilder(
       {
         title: "test",
         minSalary: 1000,
@@ -174,7 +172,7 @@ describe("_sqlForFilter", function () {
 
 
   test("works with one input", function () {
-    const filterData = Job._sqlForFilter(
+    const filterData = Job._filterWhereBuilder(
       { title: "test" });
 
     expect(filterData).toEqual(
@@ -186,7 +184,7 @@ describe("_sqlForFilter", function () {
 
 
   test("works with invalid field", function () {
-    const filterData = Job._sqlForFilter(
+    const filterData = Job._filterWhereBuilder(
       { spork: "test" });
 
     expect(filterData).toEqual(
@@ -198,7 +196,7 @@ describe("_sqlForFilter", function () {
 
 
   test("works with empty input", function () {
-    const filterData = Job._sqlForFilter({});
+    const filterData = Job._filterWhereBuilder({});
 
     expect(filterData).toEqual(
       {
