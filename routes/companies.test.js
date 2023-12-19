@@ -21,6 +21,9 @@ afterAll(commonAfterAll);
 
 /************************************** POST /companies */
 
+// update names
+// test for anon
+
 describe("POST /companies", function () {
   const newCompany = {
     handle: "new",
