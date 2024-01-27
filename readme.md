@@ -1,18 +1,16 @@
 # Jobly
 
-This is the Express backend for Jobly.
+This is the RESTful Express backend for Jobly.
 
-Jobly is a full-stack job search application that allows users to search for companies, jobs, and update their profiles.
+Jobly is a full-stack job search application that allows users to search for jobs and companies.
 
-<!-- To run this:
+##### This repo contains the express backend, the frontend can be found <a href="https://github.com/celestekilgore/jobly-frontend">here</a>.
 
-    node server.js
+## Live Demo
+- Here is a live demo of <a href="https://job-ly.surge.sh/">Jobly</a>. Jobly is hosted using a free service - please give the server a few minutes to warm up.  
+- Demo login: testusername | password
 
-To run the tests:
-
-    jest -i -->
-
-### Technologies
+## Technologies
 - React
 - Node.js
 - Express
@@ -22,15 +20,25 @@ To run the tests:
 - JSON Web Token
 - bcrypt
 
-<!-- ## Backend Technologies
-- Node.js
-- Express
-- PostgreSQL
-- JSONSchema
-- JSON Web Token
-- bcrypt -->
+## Features
+- Users can login/logout. Established secure authentication and authorization using JWT and JSON Schema.
+- Users can edit their profile information (name and email).
+- Implemented advanced filtering functionality by writing custom SQL queries to allow users to filter
+companies based on name and employee count, and jobs based on title, salary, and equity.
 
-##### This repo contains the express backend, the frontend can be found <a href="https://github.com/celestekilgore/jobly-frontend">here</a>.
+## Local setup instructions
+Fork and clone the [backend](https://github.com/celestekilgore/jobly-backend)
+```
+cd [path_to_your_copy]
+npm install
+npm start
+```
+the backend will run locally on port 3001
 
-### Live Demo
-- Here is a live demo of <a href="https://job-ly.surge.sh/">Jobly</a>
+Fork and clone the [frontend](https://github.com/celestekilgore/jobly-frontend)
+```
+cd [path_to_your_copy]
+npm install
+npm start
+```
+the frontend will run locally on port 3000
